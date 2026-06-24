@@ -1,0 +1,7 @@
+const assert = require('assert');
+const { add, greet } = require('./index');
+
+assert.strictEqual(add(2, 3), 5, 'add(2, 3) should equal 5');
+assert.strictEqual(greet('World'), 'Hello, World!', 'greet should return correct string');
+
+console.log('All tests passed!');
