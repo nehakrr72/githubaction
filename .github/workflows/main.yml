@@ -1,82 +1,46 @@
-name: Build, Test, and Deploy
+name  :   CI-WORKFLOW
+on  : 
+  push  : 
+jobs  : 
+  build  : 
+    runs-on  :  ubuntu-latest
+    steps  : 
+      - name  :  Checkout Code
+        uses  :  actions/checkout@v3
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+      - name  :  Setup NodeJS
+        uses  :  actions/setup-node@v3
+        with  : 
+          node-version  :  18
 
-jobs:
-  build:
-    runs-on: ubuntu-24.04
+      - name  :  Install Dependencies
+        run  :  npm install
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name  :  Build Application
+        run  :  npm run build
+test  : 
+    needs  :  build
+    runs-on  :  ubuntu-latest
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+    steps  : 
+      - name  :  Checkout Code
+        uses  :  actions/checkout@v3
 
-      - name: Install dependencies
-        run: npm ci
+      - name  :  Setup NodeJS
+        uses  :  actions/setup-node@v3
+        with  : 
+          node-version  :  18
 
-      - name: Build app
-        run: npm run build
+      - name  :  Install Dependencies
+        run  :  npm install
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-output
-          path: dist/
+      - name  :  Run Tests
+        run  :  npm test
+deploy  : 
+    needs  :  [build,test]
+    runs-on  :  ubuntu-latest
 
-  test:
-    runs-on: ubuntu-24.04
-    needs: build
+    steps  : 
+      - name  :  Deploy Application
+        run  :  echo "Deploying ..."
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests
-        run: npm test
-
-  deploy:
-    runs-on: ubuntu-24.04
-    needs: [build,test]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
-          path: dist/
-
-      - name: Deploy to server
-        run: |
-          echo "Deploying build to $DEPLOY_HOST"
-          # Example: rsync, scp, or a deploy CLI command goes here
-          # rsync -avz -e "ssh -i $DEPLOY_KEY" dist/ user@$DEPLOY_HOST:/var/www/app
