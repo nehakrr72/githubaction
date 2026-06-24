@@ -46,4 +46,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy Application
-        run: echo "Deploying ..."
+        run: echo "Deploying app..."
